@@ -1,4 +1,6 @@
-# axe-sb
+# axe-test
+
+Basic Vue with Storybook setup to test axe storybook testing
 
 This template should help get you started developing with Vue 3 in Vite.
 
