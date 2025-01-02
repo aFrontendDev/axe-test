@@ -14,12 +14,28 @@ const axeDevToolsOutputDir = './axe-devtools-results';
 // axe scan results file pre-pend and sub directory for JSON reports
 const axeReporter = new AxeDevtoolsReporter('axe-devtools---', axeDevToolsOutputDir + '/json');
 
-const customWaitForPageReady = async (page: Page) => {
-  await page.waitForLoadState('domcontentloaded');
-  await page.waitForLoadState('load');
-  await page.waitForFunction(() => document.readyState === 'complete');
-  await page.waitForFunction(() => document.fonts.ready);
+// const customWaitForPageReady = async (page: Page) => {
+//   await page.waitForLoadState('domcontentloaded');
+//   await page.waitForLoadState('load');
+//   await page.waitForFunction(() => document.readyState === 'complete');
+//   await page.waitForFunction(() => document.fonts.ready);
+// };
+
+const doAxeThings = async (page: Page, pageId: string) => {
+    const axeDevToolsResults = await new AxeDevtoolsBuilder({ page }).analyze();
+    axeReporter.logTestResult(pageId, axeDevToolsResults);
+    await axeReporter.buildHTML(axeDevToolsOutputDir + '/html/');
+
+    // Output axe violations to console
+    const violationsCount = axeDevToolsResults.violations?.length;
+    if (violationsCount) {
+      console.log('axeDevToolsResults.violations total:', axeDevToolsResults.violations.length);
+        // console.log(axeDevToolsResults.violations);
+    }
+
+    return true;
 };
+
 
 const config: TestRunnerConfig = {
   setup() {
@@ -32,37 +48,13 @@ const config: TestRunnerConfig = {
 
   async postVisit(page, context) {
     // Wait for page to be finished loading
-    // await waitForPageReady(page);
-    await customWaitForPageReady(page);
+    await waitForPageReady(page);
 
     // Get the page title for output files
     // const pageTitle = await page.title();
     const pageId = context.id; // e.g. core-components-uolbacktotop--default
 
-    // Run axe scan of page
-    const axeDevToolsResults = await new AxeDevtoolsBuilder({ page }).analyze();
-
-    // Log JSON results
-    // logTestResult does exist on Reporter but TS doesn't recognise it
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    axeReporter.logTestResult(pageId, axeDevToolsResults);
-
-    // Convert JSON results to HTML, jUnit XML, and CSV
-    await axeReporter.buildHTML(axeDevToolsOutputDir + '/html/');
-    // await axeReporter.buildJUnitXML(axeDevToolsOutputDir + '/junit/');
-    // await axeReporter.buildCSV(axeDevToolsOutputDir + '/csv/');
-
-    // Output axe violations to console
-    const violationsCount = axeDevToolsResults.violations?.length;
-    if (violationsCount) {
-      console.log('axeDevToolsResults.violations total:', axeDevToolsResults.violations.length);
-        // console.log(axeDevToolsResults.violations);
-    }
-
-    // Assertion
-    // expect(violationsCount).toBe(0);
-    // expect(axeDevToolsResults.violations).toHaveLength(0);
+    await doAxeThings(page, pageId);
   },
 };
 

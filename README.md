@@ -2,6 +2,21 @@
 
 Basic Vue with Storybook setup to test axe storybook testing
 
+## AXE Storybook testing
+
+- Run storybook locally
+- In a new console tab run
+
+```sh
+pnpm test-storybook
+```
+
+- this will fail, limiting max workers to 1 will work:
+
+```sh
+pnpm test-storybook --maxWorkers=1
+```
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
